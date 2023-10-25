@@ -71,27 +71,34 @@ lag0_7_temperature_iqr_nor=lag0_7_temperature/4.71;
 lag0_wind_velocity_iqr_nor=lag0_wind_velocity/1.4;
 lag7_wind_velocity_iqr_nor=lag7_wind_velocity/1.1;
 lag0_7_wind_velocity_iqr_nor=lag0_7_wind_velocity/1.05;
+lag0_avg=(lag0_humidity_iqr_nor + lag0_rainfall_iqr_nor + lag0_sun_hours_iqr_nor + lag0_temperature_iqr_nor + lag0_wind_velocity_iqr_nor)/5;
+lag7_avg=(lag7_humidity_iqr_nor + lag7_rainfall_iqr_nor + lag7_sun_hours_iqr_nor + lag7_temperature_iqr_nor + lag7_wind_velocity_iqr_nor)/5;
+lag0_7_avg=(lag0_7_humidity_iqr_nor + lag0_7_rainfall_iqr_nor + lag0_7_sun_hours_iqr_nor + lag0_7_temperature_iqr_nor + lag0_7_wind_velocity_iqr_nor)/5;
 run;
 
-proc rank data=a.data2 out=a.data3 groups=4; var lag0_humidity; ranks lag0_humidity_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag7_humidity; ranks lag7_humidity_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_humidity; ranks lag0_7_humidity_g; run;
+proc rank data=a.data2 out=a.data3 groups=4; var lag0_humidity_iqr_nor; ranks lag0_humidity_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag7_humidity_iqr_nor; ranks lag7_humidity_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_humidity_iqr_nor; ranks lag0_7_humidity_g; run;
 
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_rainfall; ranks lag0_rainfall_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag7_rainfall; ranks lag7_rainfall_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_rainfall; ranks lag0_7_rainfall_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_rainfall_iqr_nor; ranks lag0_rainfall_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag7_rainfall_iqr_nor; ranks lag7_rainfall_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_rainfall_iqr_nor; ranks lag0_7_rainfall_g; run;
 
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_sun_hours; ranks lag0_sun_hours_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag7_sun_hours; ranks lag7_sun_hours_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_sun_hours; ranks lag0_7_sun_hours_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_sun_hours_iqr_nor; ranks lag0_sun_hours_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag7_sun_hours_iqr_nor; ranks lag7_sun_hours_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_sun_hours_iqr_nor; ranks lag0_7_sun_hours_g; run;
 
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_temperature; ranks lag0_temperature_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag7_temperature; ranks lag7_temperature_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_temperature; ranks lag0_7_temperature_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_temperature_iqr_nor; ranks lag0_temperature_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag7_temperature_iqr_nor; ranks lag7_temperature_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_temperature_iqr_nor; ranks lag0_7_temperature_g; run;
 
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_wind_velocity; ranks lag0_wind_velocity_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag7_wind_velocity; ranks lag7_wind_velocity_g; run;
-proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_wind_velocity; ranks lag0_7_wind_velocity_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_wind_velocity_iqr_nor; ranks lag0_wind_velocity_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag7_wind_velocity_iqr_nor; ranks lag7_wind_velocity_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_wind_velocity_iqr_nor; ranks lag0_7_wind_velocity_g; run;
+
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_avg; ranks lag0_avg_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag7_avg; ranks lag7_avg_g; run;
+proc rank data=a.data3 out=a.data3 groups=4; var lag0_7_avg; ranks lag0_7_avg_g; run;
 
 /**analysis**/
 /*lag 0*/
@@ -116,12 +123,330 @@ model influ(event="1")=lag0_humidity_g;
 run;
 
 /*rainfall*/
+proc sort data=a.data3; by lag0_rainfall_g; run;
+
+proc means data=a.data3; var lag0_rainfall; by lag0_rainfall_g; run;
+
+proc freq data=a.data3; table influ*lag0_rainfall_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_rainfall_g (ref="0") /param=reference;
+model influ(event="1")=lag0_rainfall_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_rainfall_g;
+run;
 
 /*sun_hours*/
+proc sort data=a.data3; by lag0_sun_hours_g; run;
+
+proc means data=a.data3; var lag0_sun_hours; by lag0_sun_hours_g; run;
+
+proc freq data=a.data3; table influ*lag0_sun_hours_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_sun_hours_g (ref="0") /param=reference;
+model influ(event="1")=lag0_sun_hours_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_sun_hours_g;
+run;
 
 /*temperature*/
+proc sort data=a.data3; by lag0_temperature_g; run;
+
+proc means data=a.data3; var lag0_temperature; by lag0_temperature_g; run;
+
+proc freq data=a.data3; table influ*lag0_temperature_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_temperature_g (ref="0") /param=reference;
+model influ(event="1")=lag0_temperature_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_temperature_g;
+run;
 
 /*wind_velocity*/
+proc sort data=a.data3; by lag0_wind_velocity_g; run;
 
+proc means data=a.data3; var lag0_wind_velocity; by lag0_wind_velocity_g; run;
+
+proc freq data=a.data3; table influ*lag0_wind_velocity_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_wind_velocity_g (ref="0") /param=reference;
+model influ(event="1")=lag0_wind_velocity_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_wind_velocity_g;
+run;
+
+/*integarted score*/
+proc sort data=a.data3; by lag0_avg_g; run;
+
+proc means data=a.data3; var lag0_avg; by lag0_avg_g; run;
+
+proc freq data=a.data3; table influ*lag0_avg_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_avg_g (ref="0") /param=reference;
+model influ(event="1")=lag0_avg_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_avg_g;
+run;
+
+/*lag 7*/
+
+/*humidity*/
+proc sort data=a.data3; by lag7_humidity_g; run;
+
+proc means data=a.data3; var lag7_humidity; by lag7_humidity_g; run;
+
+proc freq data=a.data3; table influ*lag7_humidity_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag7_humidity_g (ref="0") /param=reference;
+model influ(event="1")=lag7_humidity_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag7_humidity_g;
+run;
+
+/*rainfall*/
+proc sort data=a.data3; by lag7_rainfall_g; run;
+
+proc means data=a.data3; var lag7_rainfall; by lag7_rainfall_g; run;
+
+proc freq data=a.data3; table influ*lag7_rainfall_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag7_rainfall_g (ref="0") /param=reference;
+model influ(event="1")=lag7_rainfall_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag7_rainfall_g;
+run;
+
+/*sun_hours*/
+proc sort data=a.data3; by lag7_sun_hours_g; run;
+
+proc means data=a.data3; var lag7_sun_hours; by lag7_sun_hours_g; run;
+
+proc freq data=a.data3; table influ*lag7_sun_hours_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag7_sun_hours_g (ref="0") /param=reference;
+model influ(event="1")=lag7_sun_hours_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag7_sun_hours_g;
+run;
+
+/*temperature*/
+proc sort data=a.data3; by lag7_temperature_g; run;
+
+proc means data=a.data3; var lag7_temperature; by lag7_temperature_g; run;
+
+proc freq data=a.data3; table influ*lag7_temperature_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag7_temperature_g (ref="0") /param=reference;
+model influ(event="1")=lag7_temperature_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag7_temperature_g;
+run;
+
+/*wind_velocity*/
+proc sort data=a.data3; by lag7_wind_velocity_g; run;
+
+proc means data=a.data3; var lag7_wind_velocity; by lag7_wind_velocity_g; run;
+
+proc freq data=a.data3; table influ*lag7_wind_velocity_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag7_wind_velocity_g (ref="0") /param=reference;
+model influ(event="1")=lag7_wind_velocity_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag7_wind_velocity_g;
+run;
+
+/*integarted score*/
+proc sort data=a.data3; by lag7_avg_g; run;
+
+proc means data=a.data3; var lag7_avg; by lag7_avg_g; run;
+
+proc freq data=a.data3; table influ*lag7_avg_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag7_avg_g (ref="0") /param=reference;
+model influ(event="1")=lag7_avg_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag7_avg_g;
+run;
+
+/*lag0_7*/
+
+/*humidity*/
+proc sort data=a.data3; by lag0_7_humidity_g; run;
+
+proc means data=a.data3; var lag0_7_humidity; by lag0_7_humidity_g; run;
+
+proc freq data=a.data3; table influ*lag0_7_humidity_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_7_humidity_g (ref="0") /param=reference;
+model influ(event="1")=lag0_7_humidity_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_7_humidity_g;
+run;
+
+/*rainfall*/
+proc sort data=a.data3; by lag0_7_rainfall_g; run;
+
+proc means data=a.data3; var lag0_7_rainfall; by lag0_7_rainfall_g; run;
+
+proc freq data=a.data3; table influ*lag0_7_rainfall_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_7_rainfall_g (ref="0") /param=reference;
+model influ(event="1")=lag0_7_rainfall_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_7_rainfall_g;
+run;
+
+/*sun_hours*/
+proc sort data=a.data3; by lag0_7_sun_hours_g; run;
+
+proc means data=a.data3; var lag0_7_sun_hours; by lag0_7_sun_hours_g; run;
+
+proc freq data=a.data3; table influ*lag0_7_sun_hours_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_7_sun_hours_g (ref="0") /param=reference;
+model influ(event="1")=lag0_7_sun_hours_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_7_sun_hours_g;
+run;
+
+/*temperature*/
+proc sort data=a.data3; by lag0_7_temperature_g; run;
+
+proc means data=a.data3; var lag0_7_temperature; by lag0_7_temperature_g; run;
+
+proc freq data=a.data3; table influ*lag0_7_temperature_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_7_temperature_g (ref="0") /param=reference;
+model influ(event="1")=lag0_7_temperature_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_7_temperature_g;
+run;
+
+/*wind_velocity*/
+proc sort data=a.data3; by lag0_7_wind_velocity_g; run;
+
+proc means data=a.data3; var lag0_7_wind_velocity; by lag0_7_wind_velocity_g; run;
+
+proc freq data=a.data3; table influ*lag0_7_wind_velocity_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_7_wind_velocity_g (ref="0") /param=reference;
+model influ(event="1")=lag0_7_wind_velocity_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_7_wind_velocity_g;
+run;
+
+/*integarted score*/
+proc sort data=a.data3; by lag0_7_avg_g; run;
+
+proc means data=a.data3; var lag0_7_avg; by lag0_7_avg_g; run;
+
+proc freq data=a.data3; table influ*lag0_7_avg_g; run;
+
+proc logistic data=a.data3;
+strata id;
+class lag0_7_avg_g (ref="0") /param=reference;
+model influ(event="1")=lag0_7_avg_g;
+run;
+
+proc logistic data=a.data3;
+strata id;
+class /param=reference;
+model influ(event="1")=lag0_7_avg_g;
+run;
 
 
